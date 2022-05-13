@@ -46,8 +46,11 @@ class Configuration():
 
     @staticmethod
     def read():
-        with open(CONFIGURATION_FILEPATH, 'r') as f:
-            configuration = f.read()
+        try:
+            with open(CONFIGURATION_FILEPATH, 'r') as f:
+                configuration = f.read()
+        except FileNotFoundError:
+            raise FileNotFoundError("ERROR: no config file found. Did you forget to call run init? -> python3 -m turnin init")
         parsed_configuration = json.loads(configuration)
         return Configuration(**parsed_configuration)
 
