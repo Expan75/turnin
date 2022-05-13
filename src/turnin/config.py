@@ -54,6 +54,21 @@ class Configuration():
         parsed_configuration = json.loads(configuration)
         return Configuration(**parsed_configuration)
 
+    @staticmethod
+    def verify():
+        """Utility method for ensuring github connection with provided token"""
+        try:
+            config = Configuration.read()
+            config.verify_ssh_to_github()
+            config.verify_accesss_token_to_github()
+        except (NotImplementedError, FileNotFoundError) as e: raise e('ERROR: Configuration verification failed')
+
+    def verify_ssh_to_github(self):
+        raise NotImplementedError
+
+    def verify_accesss_token_to_github(self):
+        raise NotImplementedError
+
     def write(self):
         with open(CONFIGURATION_FILEPATH, 'w+') as f:
             json.dump({

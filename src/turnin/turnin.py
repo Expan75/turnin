@@ -1,5 +1,5 @@
 import fire
-import config
+from config import Configuration
 
 BRAND = "turnin"
 VERSION = "0.0.1"
@@ -18,7 +18,7 @@ class Commands:
     
     def init(self):
         """Initalises the tool, sets up github access etc., generates static file"""
-        config.Configuration.init()
+        Configuration.init()
 
     def verify(self):
         """Verifies the integrity of the tool and its initalisation."""
