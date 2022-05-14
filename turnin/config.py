@@ -13,6 +13,7 @@ class Configuration():
     github_access_token: str
     instructor_email_addresses: List[str]
 
+    @staticmethod
     def init():
         """Starts the inital flow to create a configuration file"""
 
@@ -59,18 +60,20 @@ class Configuration():
     def verify():
         """Utility method for ensuring github connection with provided token"""
         try:
-            config = Configuration.read()
-            config.verify_ssh_to_github()
-            config.verify_accesss_token_to_github()
+            config = Configuration.read().verify_ssh_to_github() #verify_accesss_token_to_github()
         except (NotImplementedError, FileNotFoundError, RuntimeError) as e:
             raise e('ERROR: Configuration verification failed')
+        print("SUCCESS: verification was successful. You should now be able to submit assignments!")
+        return config
 
     def verify_ssh_to_github(self):
-        process = subprocess.run(["ssh","-T", "git@github.com"], stdout=subprocess.PIPE)
-        decoded_process_result = process.stdout.decode('utf-8')
-        print("decoded output: ", decoded_process_result)
-        if "You've successfully authenticated" not in decoded_process_result:
-            raise RuntimeError(f"Authenticated ssh connection to Github could not be established. The given output was: {decoded_process_result}")
+        ssh_to_github_process = subprocess.run(["ssh","-T", "git@github.com"], encoding="utf-8", capture_output=True)
+        if (
+            ("You've successfully authenticated" not in ssh_to_github_process.stdout)
+            and ("You've successfully authenticated" not in ssh_to_github_process.stderr)
+        ):
+            raise RuntimeError(f"Authenticated ssh connection to Github could not be established. The given output was: {ssh_attempt_result}")
+        return self
 
     def verify_accesss_token_to_github(self):
         raise NotImplementedError
@@ -86,5 +89,4 @@ class Configuration():
 
 
 if __name__ == '__main__':
-    config = Configuration("", "", "")
-    config.verify_ssh_to_github()
+    config = Configuration.verify()
