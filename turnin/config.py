@@ -1,12 +1,11 @@
 """Actions for managing tool configuration and setup"""
 import os
 import json
+import subprocess
 from typing import List
 from dataclasses import dataclass
 
-from turnin import BRAND
-
-CONFIGURATION_FILEPATH = os.path.join(os.path.expanduser("~"), f".{BRAND}")
+import constants
 
 @dataclass
 class Configuration():
@@ -17,7 +16,7 @@ class Configuration():
     def init():
         """Starts the inital flow to create a configuration file"""
 
-        if os.path.isfile(CONFIGURATION_FILEPATH):
+        if os.path.isfile(constants.CONFIGURATION_FILEPATH):
             print("Configuration file already exists. Are you sure you would like to override it?")
             if "reinit" != input("To override and reinitalise, enter 'reinit': "):
                 print("exiting...")
@@ -29,9 +28,9 @@ class Configuration():
         instructor_emails = []
         add_more_toggle = True
         while len(instructor_emails) < 1 or add_more_toggle:
-            instructor_email = input('Please input the email of your instructor: ')
+            instructor_email = input('Please input the email of an assigned instructor: ')
             instructor_emails.append(instructor_email)
-            add_more_toggle = True if input("Would you like to add another? 1. Yes, 2. No") == 1 else False
+            add_more_toggle = True if input("Would you like to add another? (y/n): ") == "y" else False
         github_access_token = input('Please input your github access token: ')
 
         # TODO: currently there's no validation. Probably we'd restart the entire flow for simplicty.
@@ -47,10 +46,12 @@ class Configuration():
     @staticmethod
     def read():
         try:
-            with open(CONFIGURATION_FILEPATH, 'r') as f:
+            with open(constants.CONFIGURATION_FILEPATH, 'r') as f:
                 configuration = f.read()
         except FileNotFoundError:
-            raise FileNotFoundError("ERROR: no config file found. Did you forget to call run init? -> python3 -m turnin init")
+            raise FileNotFoundError(
+                "ERROR: no config file found. Did you forget to call run init? -> python3 -m turnin init"
+            )
         parsed_configuration = json.loads(configuration)
         return Configuration(**parsed_configuration)
 
@@ -61,30 +62,29 @@ class Configuration():
             config = Configuration.read()
             config.verify_ssh_to_github()
             config.verify_accesss_token_to_github()
-        except (NotImplementedError, FileNotFoundError) as e: raise e('ERROR: Configuration verification failed')
+        except (NotImplementedError, FileNotFoundError, RuntimeError) as e:
+            raise e('ERROR: Configuration verification failed')
 
     def verify_ssh_to_github(self):
-        raise NotImplementedError
+        process = subprocess.run(["ssh","-T", "git@github.com"], stdout=subprocess.PIPE)
+        decoded_process_result = process.stdout.decode('utf-8')
+        print("decoded output: ", decoded_process_result)
+        if "You've successfully authenticated" not in decoded_process_result:
+            raise RuntimeError(f"Authenticated ssh connection to Github could not be established. The given output was: {decoded_process_result}")
 
     def verify_accesss_token_to_github(self):
         raise NotImplementedError
 
     def write(self):
-        with open(CONFIGURATION_FILEPATH, 'w+') as f:
+        with open(constants.CONFIGURATION_FILEPATH, 'w+') as f:
             json.dump({
                 'student_email': self.student_email,
                 'github_access_token': self.github_access_token,
                 'instructor_email_addresses': self.instructor_email_addresses    
-            }, f)
+            }, f, indent=4)
         return self
 
 
 if __name__ == '__main__':
-    config = Configuration.init()
-    print("initalised conf as: ", config)
-    config.student_email = "stefan@google.com"
-    config.write()
-    print("update and ensure it's different...")
-    del config
-    config = Configuration.read()
-    print("updated conf: ", config)
+    config = Configuration("", "", "")
+    config.verify_ssh_to_github()

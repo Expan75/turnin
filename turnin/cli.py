@@ -1,8 +1,7 @@
 import fire
-from config import Configuration
 
-BRAND = "turnin"
-VERSION = "0.0.1"
+from config import Configuration
+from constants import VERSION
 
 
 class SubCommands:
@@ -27,7 +26,7 @@ class Commands:
     
     def version(self):
         """Returns the version of the tool."""
-        print(f"{BRAND}-cli v{VERSION}")
+        print(f"turnin-cli v{VERSION}")
 
 
 if __name__ == "__main__":
