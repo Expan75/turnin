@@ -1,6 +1,8 @@
 """Actions for managing tool configuration and setup"""
 import os
 import json
+import urllib.request
+import urllib.error
 import subprocess
 from typing import List
 from dataclasses import dataclass
@@ -56,11 +58,20 @@ class Configuration():
         parsed_configuration = json.loads(configuration)
         return Configuration(**parsed_configuration)
 
+    def write(self):
+        with open(constants.CONFIGURATION_FILEPATH, 'w+') as f:
+            json.dump({
+                'student_email': self.student_email,
+                'github_access_token': self.github_access_token,
+                'instructor_email_addresses': self.instructor_email_addresses    
+            }, f, indent=4)
+        return self
+
     @staticmethod
     def verify():
-        """Utility method for ensuring github connection with provided token"""
+        """Utility method for ensuring installation and configuration integrity"""
         try:
-            config = Configuration.read().verify_ssh_to_github() #verify_accesss_token_to_github()
+            config = Configuration.read().verify_ssh_to_github().verify_accesss_token_to_github()
         except (NotImplementedError, FileNotFoundError, RuntimeError) as e:
             raise e('ERROR: Configuration verification failed')
         print("SUCCESS: verification was successful. You should now be able to submit assignments!")
@@ -72,19 +83,25 @@ class Configuration():
             ("You've successfully authenticated" not in ssh_to_github_process.stdout)
             and ("You've successfully authenticated" not in ssh_to_github_process.stderr)
         ):
-            raise RuntimeError(f"Authenticated ssh connection to Github could not be established. The given output was: {ssh_attempt_result}")
+            raise RuntimeError(f"Authenticated ssh connection to Github could not be established. Output {ssh_to_github_process.stderr}")
         return self
 
     def verify_accesss_token_to_github(self):
-        raise NotImplementedError
-
-    def write(self):
-        with open(constants.CONFIGURATION_FILEPATH, 'w+') as f:
-            json.dump({
-                'student_email': self.student_email,
-                'github_access_token': self.github_access_token,
-                'instructor_email_addresses': self.instructor_email_addresses    
-            }, f, indent=4)
+        try:
+            # fetch user details (every resource is identity scoped)
+            headers={
+                "Accept": "application/vnd.github.v3+json", 
+                "Authorization": "Bearer " + self.github_access_token
+            }
+            request = urllib.request.Request("https://api.github.com/user", headers=headers)
+            response = urllib.request.urlopen(request)
+            print("current auth user res.status: ", response.status)
+            print("current auth user res.body: ", response.body)
+            # TODO: verify repository creation right
+        except AssertionError as e:
+            raise RuntimeError(f"Access token not defined, did you run python -m turnin init? Error: {e}")
+        except urllib.error.URLError as e:
+            raise RuntimeError(f"Access token not valid, recieved error from github API; {e}")
         return self
 
 
