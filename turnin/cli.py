@@ -1,7 +1,9 @@
 import fire
 
 from config import Configuration
-from constants import VERSION
+
+
+VERSION = "0.0.1"
 
 
 class SubCommands:
