@@ -1,6 +1,8 @@
 """Module for interacting with Github"""
 from abc import ABC, abstractmethod
 
+from turnin.config import ConfigurationManager 
+
 
 class GitProviderClient(ABC):
 

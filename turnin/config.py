@@ -10,7 +10,7 @@ from dataclasses import dataclass
 CONFIGURATION_FILEPATH = os.path.join(os.path.expanduser("~"), ".turnin")
 
 @dataclass
-class Configuration():
+class ConfigurationManager():
     student_email: str
     github_access_token: str
     instructor_email_addresses: List[str]
@@ -38,7 +38,7 @@ class Configuration():
 
         # TODO: currently there's no validation. Probably we'd restart the entire flow for simplicty.
         print("initialising and writing configuration...")
-        configuration = Configuration(
+        configuration = ConfigurationManager(
             student_email=student_email, 
             instructor_email_addresses=instructor_emails,
             github_access_token=github_access_token
@@ -56,7 +56,7 @@ class Configuration():
                 "ERROR: no config file found. Did you forget to call run init? -> python3 -m turnin init"
             )
         parsed_configuration = json.loads(configuration)
-        return Configuration(**parsed_configuration)
+        return ConfigurationManager(**parsed_configuration)
 
     def write(self):
         with open(CONFIGURATION_FILEPATH, 'w+') as f:
@@ -71,7 +71,7 @@ class Configuration():
     def verify():
         """Utility method for ensuring installation and configuration integrity"""
         try:
-            config = Configuration.read().verify_ssh_to_github().verify_accesss_token_to_github()
+            config = ConfigurationManager.read().verify_ssh_to_github().verify_accesss_token_to_github()
             print("SUCCESS: verification was successful. You should now be able to submit assignments!")
             return config      
         except (NotImplementedError, FileNotFoundError, RuntimeError) as e:
