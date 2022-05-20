@@ -109,6 +109,4 @@ class Configuration():
 
 
 if __name__ == "__main__":
-    config = Configuration.read()
-    print(config)
-    config.verify_accesss_token_to_github()
+    pass
