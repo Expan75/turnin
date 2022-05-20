@@ -10,7 +10,7 @@ from dataclasses import dataclass
 CONFIGURATION_FILEPATH = os.path.join(os.path.expanduser("~"), ".turnin")
 
 @dataclass
-class ConfigurationManager():
+class ConfigurationManager:
     student_email: str
     github_access_token: str
     instructor_email_addresses: List[str]
