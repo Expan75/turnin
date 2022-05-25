@@ -10,9 +10,6 @@ class TestConfig(unittest.TestCase):
 
     configuration_filepath = os.path.join(tempfile.gettempdir(), '.turnin.json')
 
-    def test_module_exists(self):
-        self.assertIsNotNone(config)
-
     def test_class_exists(self):
         self.assertIsNotNone(config.ConfigurationManager)
     
@@ -36,6 +33,7 @@ class TestConfig(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 # should yield 401 as no valid access token is provided.
                 config.ConfigurationManager('test@test.com', '', ['']).write().verify_accesss_token_to_github()
+
 
 if __name__ == "__main__":
     unittest.main()
