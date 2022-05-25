@@ -2,10 +2,10 @@ import os
 from urllib.request import Request, urlopen
 
 from turnin.config import ConfigurationManager
-from turnin.git_provider_client import GitProviderClient
+from turnin.provider import BackendProvider
 
 
-class GithubClient(GitProviderClient):
+class GithubClient(BackendProvider):
 
     root_url = "https://api.github.com"
 
