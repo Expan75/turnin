@@ -1,4 +1,5 @@
 import os
+from urllib.request import Request, urlopen
 
 from turnin.config import ConfigurationManager
 from turnin.git_provider_client import GitProviderClient
@@ -6,42 +7,29 @@ from turnin.git_provider_client import GitProviderClient
 
 class GithubClient(GitProviderClient):
 
+    root_url = "https://api.github.com"
+
     def __init__(self, config: ConfigurationManager):
         self.config = config
-    
-    @property
-    def headers(self):
-        return {
+        self.headers = {
             "Authorization": f"Bearer {self.config.github_access_token}",
-            "Accept": "application/json",
+            "Accept": "application/vnd.github.v3+json",
         }
+    
+    def fork(self, repository_url: str):
+        """Forks a repository given valid access token""" 
+        # In accordance /w https://docs.github.com/en/rest/repos/forks#create-a-fork
+        owner_name, repository_name = repository_url.replace('.git', "").split("/")[-2:] 
+        url = os.path.join(self.root_url, "repos", owner_name, repository_name, "forks")
+        with urlopen(Request(url, method="POST", headers=self.headers)) as response:
+            print(response.read().decode())
 
-    def clone(self, repository_url: str, local_path: str = None):
-        """Clone a github repository via system git tool"""
+    def invite_collaborator(self, repository_name: str, collaborator_email: str):
         raise NotImplementedError
-                
 
     def create_pull_request(self, assignment_name: str):
         raise NotImplementedError
 
-    def download_repository(self, repository_url: str, local_path: str = "."):
-        """Fetches a full or partial repository but removes .git and .gitignore files"""
-        cloneable_url = self.get_cloneable_url(repository_url)
-        print("cloneable_url: ", cloneable_url)
-   
-    def fork(self, repository_url: str, new_repository_name: str):
-        """Forks a repository given valid access token"""
-        raise NotImplementedError
-    
-    def invite_collaborator(self, repository_name: str, collaborator_email: str):
-        raise NotImplementedError
-
-    @staticmethod
-    def get_cloneable_url(repository_url: str):
-        #TODO: needs to be way more robust.
-        return "https://" + os.path.join(*repository_url.split("/")[:3])
-
 
 if __name__ == "__main__":
-    config = ConfigurationManager.read()
-    client = GithubClient(config)
+    pass
