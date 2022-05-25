@@ -1,7 +1,7 @@
 import os
 
-from turnin.git_provider_client import GitProviderClient
 from turnin.config import ConfigurationManager
+from turnin.git_provider_client import GitProviderClient
 
 
 class GithubClient(GitProviderClient):
@@ -16,9 +16,10 @@ class GithubClient(GitProviderClient):
             "Accept": "application/json",
         }
 
-    def clone(self, repository_url: str):
+    def clone(self, repository_url: str, local_path: str = None):
         """Clone a github repository via system git tool"""
-        raise NotImplementedError 
+        raise NotImplementedError
+                
 
     def create_pull_request(self, assignment_name: str):
         raise NotImplementedError
