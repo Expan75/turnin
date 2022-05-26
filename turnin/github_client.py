@@ -34,6 +34,9 @@ class GithubClient(BackendProviderClient):
     def create_pull_request(self, assignment_name: str):
         raise NotImplementedError
 
+    def repository_api_url(self, repository_name, repository_owner) -> str:
+        """Helper method for formatting repository api endpoint"""
+        return os.path.join(self.root_url, "repos", repository_owner, repository_name)
 
 if __name__ == "__main__":
     pass
