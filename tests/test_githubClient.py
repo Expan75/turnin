@@ -7,22 +7,22 @@ from turnin.github_client import GithubClient
 
 class TestGithubClient(unittest.TestCase):
 
-    config = ConfigurationManager(
-        os.getenv("STUDENT_EMAIL"),
-        os.getenv("GITHUB_ACCESS_TOKEN"),
-        os.getenv("INSTRUCTOR_EMAIL_LIST").split(","),
-    )
+    config = ConfigurationManager.read()
     client = GithubClient(config)
 
     def test_class_exists(self):
         self.assertIsNotNone(self.client)
-   
-    def test_fork(self):
-        """NOTE: we don't have delete rights on the token so manual cleanup is required here"""
-        self.client.fork("https://github.com/octocat/Hello-World", "hello-world")
-        with self.assertRaises(RuntimeError):
-            self.client.fork("https://github.com/octocat/Hello-World", "hello-world")
 
+    @patch('builtins.print', lambda x: x) 
+    def test_fork(self):
+        sample_repo_url = "https://github.com/octocat/Hello-World" 
+        """NOTE: we don't have delete rights on the token so manual cleanup is required here"""
+        respository_url_1 = self.client.fork(sample_repo_url)
+        respository_url_2 = self.client.fork(sample_repo_url)
+        self.assertIsNotNone(respository_url_1)
+        self.assertIsNotNone(respository_url_1)
+        self.assertTrue(respository_url_1 == respository_url_2)
+    
     def test_invite_collaborator(self):
         pass
 

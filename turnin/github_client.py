@@ -1,13 +1,15 @@
 import os
+import json
 from urllib.request import Request, urlopen
 
 from turnin.config import ConfigurationManager
-from turnin.provider import BackendProvider
+from turnin.provider import BackendProviderClient
 
 
-class GithubClient(BackendProvider):
+class GithubClient(BackendProviderClient):
 
     root_url = "https://api.github.com"
+    root_domain = "https://github.com"
 
     def __init__(self, config: ConfigurationManager):
         self.config = config
@@ -22,7 +24,9 @@ class GithubClient(BackendProvider):
         owner_name, repository_name = repository_url.replace('.git', "").split("/")[-2:] 
         url = os.path.join(self.root_url, "repos", owner_name, repository_name, "forks")
         with urlopen(Request(url, method="POST", headers=self.headers)) as response:
-            print(response.read().decode())
+            forked_repository_url = json.loads(response.read().decode())["html_url"]
+            print("Forked in progress, should be viewable on %s" % forked_repository_url)
+            return forked_repository_url
 
     def invite_collaborator(self, repository_name: str, collaborator_email: str):
         raise NotImplementedError

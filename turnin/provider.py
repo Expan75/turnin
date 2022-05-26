@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class BackendProvider(ABC):
+class BackendProviderClient(ABC):
     """Allow us to potentially which out Github to some other backend provider"""
 
     @abstractmethod
