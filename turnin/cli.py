@@ -1,8 +1,8 @@
 import fire
 
-from git import GitClient
-from config import ConfigurationManager
-from github import GithubClient
+from turnin import git
+from turnin.config import ConfigurationManager
+
 
 VERSION = "0.0.1"
 
@@ -11,7 +11,7 @@ class AssignmentCommands:
     """Use this subcommand to submit homework assignments"""
 
     def create(self, template_url: str, pathname: str = None):
-        GitClient.clone(template_url, pathname)
+        git.clone(template_url, pathname)
 
     def submit(self):
         pass

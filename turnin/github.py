@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from turnin import requests
 from turnin.provider import BackendProviderClient
 
+
 GITHUB_CLIENT_APP_ID = "Iv1.8e52222238324e4d"
 
 
@@ -34,14 +35,13 @@ class GithubClient(BackendProviderClient):
         if "exit" in user_input:
             exit(2)
         
-        access_token = GithubClient.request_oath_access_token(
-            device_code=device_code_data.device_code    
-        )
+        access_token = GithubClient.request_oath_access_token(device_code_data)
         
         return access_token
         
     @staticmethod
     def request_oath_device_code() -> OathDeviceCodeResponse:
+        """Invokes the github device oath flow, grabbing a oath object that the user can ack"""
         response = requests.post("https://github.com/login/device/code", data={
             "client_id": GITHUB_CLIENT_APP_ID
         })        
