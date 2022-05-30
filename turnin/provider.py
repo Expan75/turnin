@@ -5,7 +5,11 @@ class BackendProviderClient(ABC):
     """Allow us to potentially which out Github to some other backend provider"""
 
     @abstractmethod
-    def fork(self, repository_url: str, new_repository_name: str):
+    def authenticate():
+        pass 
+
+    @abstractmethod
+    def fork(repository_url: str, new_repository_name: str):
         pass
  
     @abstractmethod

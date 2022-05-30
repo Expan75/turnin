@@ -2,12 +2,12 @@ import unittest
 from unittest.mock import patch
 
 from turnin.config import ConfigurationManager
-from turnin.github_client import GithubClient
+from turnin.github import GithubClient
 
 class TestGithubClient(unittest.TestCase):
 
     config = ConfigurationManager.read()
-    client = GithubClient(config)
+    client = GithubClient(config.github_access_token)
 
     def test_class_exists(self):
         self.assertIsNotNone(self.client)

@@ -2,7 +2,7 @@ import fire
 
 from git import GitClient
 from config import ConfigurationManager
-from github_client import GithubClient
+from github import GithubClient
 
 VERSION = "0.0.1"
 

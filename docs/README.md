@@ -1,4 +1,23 @@
-# turnin documentation
+# turnin
+
+Turnin is a cli-tool that aims to automate a git-first homework submission flow. In short, the tool sets up a homework repository for a given student and automates a submission flow which ends in a pull request being raised and instructors being notified.
+
+## The Problem
+
+Using a git provider like Github for homework submission has a ton of benefits but relies on students and instructors feeling comfortable with a git. Currently, there is no alternative to using Git and Github fully or not using it at all. This tool aims to be that in between without disabling the future fully fledged manual use of git and Github.
+
+## Implications of the tool
+
+For students this means:
+1. Straight forward way of submitting work that can be done in a single command.
+2. Ability to utilise repositories as templates for their submissions, reducing the amount of boilerplate that needs to be produced as part of any submission.
+3. Practice with a terminal+editor based workflow and gain gradual exposure to the industry standard git approach of development.
+
+For instructors this means:
+1. No LMS is needed.
+2. Automatic email notifications and timestamps upon submission.
+3. Allows pull requests to be used as the basis of all feedback.
+4. Usage of premade templates to standardise submissions (alt. running tests).
 
 ## Dependencies
 
@@ -35,45 +54,4 @@ If no errors are returned, you are good to go!
     ```console
     python3 -m turnin homework submit my-homework-submission
     ```
-
-# Motivation for the tool
-
-## What?
-
-A cli tool that ease the burden of introducing git to students unfamiliar with it, 
-despite its benefits for both students (as it is the de facto development flow) and intructors (Pull requests vs. a local word doc file etc.).
-
-## How?
-
-With minimal setup (Github + SSH access + Github access token). The student flow would look something like:
-
-1. Assuming Python is installed already, install the library via:
-```console
-python3 -m pip install turnin
-```
-2. Create new assignments, optionally based on provided templates by instructors (useful for standardisastion). Assignments here are just folders filled with files (usually code).
-    ```console
-    python3 -m turnin homework new --template github.com/org/template.git my-homework-folder
-    ```
-3. The student works on submission in whatever way they want, any tools, editors etc. are fine.
-
-4. The student feels done and submits using the library. This automates the <code>git checkout -B submission-x && git add . && git commit -am && git push -u origin submission-x</code> flow. This happens in a local repository that is isolated from the actual my-homework-folder.
-    ```console
-    python3 -m turnin homework submit my-homework-foler
-    ```
-
-5. As part of the submission process, the assigned instructors will be tagged as reviewers on a raised pull request and notified accordingly.
-
-6. When git has been introduced, it is easy to clone the existing homework repository and start the more manual flow, including cloning homework submission templates.
-
-## Why?
-
-1. Anyone with a computer with python, git and an authenticated Github will be able to automatically submit homework in an efficient manner without any knowledge of Git or programming language. This drastically simplifies the homework process for both students and instructors. This also comes at the benefit of 1) emulating a real work flow, 2) not locking into a LMS platform.
-
-2. It is easy to gradually move into submitting "manually" via Git if we choose to. Simply manually fork a new course/homework template directory and do all the other steps manually. This lessens the cognitive load on students massively while still enabling to teach the "industry flow" of things. Training wheels come off when appropriate kind of thing.
-
-3. Enforces a git first approach to content. The benefits are plentiful:
-    - No need to rely on different email providers or message pro for persistance.
-    - Submissions are always unique, standardised, traceable, and backed up.
-    - Feedback can be given in the way its done in industry, including advanced features like writing highlighted code suggestions, line-by-line comments.
-    - Submitting to git unlocks all sorts of automation, plagirism checking, semi-automated marking with human in the loop., etc.
+By this point, the homework is submitted, and the neccessary steps for raising a pull request with the content and assigned instructor will be taken care off.
