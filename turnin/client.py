@@ -5,7 +5,7 @@ class Client(ABC):
     """Allow us to potentially which out Github to some other backend provider"""
 
     @abstractmethod
-    def auth(self) -> str:
+    def authenticate(self) -> str:
         """Can be any authentication strategy but machine oath is preferred."""
         pass
 

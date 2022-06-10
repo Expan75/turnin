@@ -21,11 +21,6 @@ class GithubClient(Client):
     @staticmethod
     def authenticate():
         pass
-
-    @staticmethod
-    def get_access_token():
-        """Establish oath flow"""
-        pass
     
     def fork(self, repository_url: str):
         """Forks a repository given valid access token""" 
