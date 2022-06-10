@@ -12,7 +12,7 @@ CONFIGURATION_FILEPATH = os.path.join(os.path.expanduser("~"), ".turnin")
 @dataclass
 class ConfigurationManager:
     student_email: str
-    github_access_token: str
+    access_token: str
     instructor_email_addresses: List[str]
 
     @staticmethod
@@ -34,14 +34,14 @@ class ConfigurationManager:
             instructor_email = input('Please input the email of an assigned instructor: ')
             instructor_emails.append(instructor_email)
             add_more_toggle = True if input("Would you like to add another? (y/n): ") == "y" else False
-        github_access_token = input('Please input your github access token: ')
+        access_token = input('Please input your github access token: ')
 
         # TODO: currently there's no validation. Probably we'd restart the entire flow for simplicty.
         print("initialising and writing configuration...")
         configuration = ConfigurationManager(
             student_email=student_email, 
             instructor_email_addresses=instructor_emails,
-            github_access_token=github_access_token
+            access_token=access_token
         ).write()
         print(f"successfully wrote configuration to disk")
         return configuration
@@ -62,7 +62,7 @@ class ConfigurationManager:
         with open(CONFIGURATION_FILEPATH, 'w+') as f:
             json.dump({
                 'student_email': self.student_email,
-                'github_access_token': self.github_access_token,
+                'access_token': self.access_token,
                 'instructor_email_addresses': self.instructor_email_addresses    
             }, f, indent=4)
         return self
@@ -91,7 +91,7 @@ class ConfigurationManager:
             # fetch user details (every resource is identity scoped)
             headers={
                 "Accept": "application/vnd.github.v3+json", 
-                "Authorization": "Bearer " + self.github_access_token
+                "Authorization": "Bearer " + self.access_token
             }
             request = urllib.request.Request("https://api.github.com/user", headers=headers)
             response = json.loads(urllib.request.urlopen(request).read().decode())

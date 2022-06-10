@@ -10,6 +10,11 @@ class Client(ABC):
         pass
 
     @abstractmethod
+    def verify_access_token(token: str) -> bool:
+        """Checks if a access token is valid"""
+        pass
+
+    @abstractmethod
     def fork(self, repository_url: str, new_repository_name: str):
         """Platform specific copy of a remote repository to a users own account"""
         pass
