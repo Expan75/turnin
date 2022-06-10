@@ -4,12 +4,11 @@
 
 Turnin is a cli-tool packaged as a standalone python library that automates the submission process of homework on Github. It is meant to be used by students submitting programming assignmnets, and be benefitted by instructors being able to review these assignments as they would any other code.
 
-In short, a remote repository is maintained and updated when the student submits. The files are moved to the "hidden" repository (created under ~/.turnin) and committed+pushed to a new branch (and a pull request is automatically raised with the appropriate reviewers).
+In short, turnin takes care of setting up a student repository (both a local and remote one) and maintains it by packaging submissions as pull requests, and notifies the appropriate instructors.
 
 This accomplishes:
-
-1. The student is can learn git at the their own pace.
-2. The submission is standardised, repeatable, and developer centric.
+1. The student can learn git at the their own pace.
+2. The submission is standardised, repeatable, and automated.
 3. The review process is standardised and feedback is available as soon as it is released.
 4. Both students and instructors work within the industry standard developer flow.
 

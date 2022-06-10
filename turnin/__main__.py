@@ -1,3 +1,3 @@
 import fire
-from .cli import Commands
-fire.Fire(Commands)
+from . import cli
+fire.Fire(cli.Commands)

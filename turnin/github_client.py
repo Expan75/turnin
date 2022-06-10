@@ -17,6 +17,15 @@ class GithubClient(BackendProviderClient):
             "Authorization": f"Bearer {self.config.github_access_token}",
             "Accept": "application/vnd.github.v3+json",
         }
+
+    @staticmethod
+    def authenticate():
+        pass
+
+    @staticmethod
+    def get_access_token():
+        """Establish oath flow"""
+        pass
     
     def fork(self, repository_url: str):
         """Forks a repository given valid access token""" 
