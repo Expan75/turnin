@@ -14,14 +14,17 @@ class GithubClient(Client):
 
     def __init__(self, config: ConfigurationManager):
         self.config = config
-        self.headers = {
+
+    @property
+    def headers(self):
+        return {
             "Authorization": f"Bearer {self.config.access_token}",
             "Accept": "application/vnd.github.v3+json",
         }
 
     @staticmethod
     def authenticate() -> str:
-        """Invokes oath flow and Passes authentication to configuration manager"""
+        """Invokes oath flow and passes authentication token"""
         access_token = os.getenv("GITHUB_ACCESS_TOKEN")
         return access_token
 

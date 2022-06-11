@@ -4,13 +4,18 @@ from unittest.mock import patch
 from turnin.config import ConfigurationManager
 from turnin.github_client import GithubClient
 
-class TestGithubClient(unittest.TestCase):
 
+class TestGithubClient(unittest.TestCase):
+    
     config = ConfigurationManager.read()
     client = GithubClient(config)
 
     def test_class_exists(self):
         self.assertIsNotNone(self.client)
+
+    def test_headers(self):
+        self.assertIsNotNone(self.headers())
+
 
     @patch('builtins.print', lambda x: x) 
     def test_fork(self):
