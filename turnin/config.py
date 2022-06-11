@@ -9,11 +9,34 @@ from dataclasses import dataclass
 
 CONFIGURATION_FILEPATH = os.path.join(os.path.expanduser("~"), ".turnin")
 
+
+def format_prompt(prompt: str) -> str:
+    return f"{prompt}: " if prompt[-1] != " " else prompt 
+
+
+def get_and_confirm_input(message: str) -> str:
+    """utility loop for confirming input, hopefully reducing typos"""
+    attemps = 0
+    message_prompt = format_prompt(message)
+    while attemps < 3:
+        result = input(message_prompt)
+        confirm_prompt = input(format_prompt(f"{message} again"))    
+        if result == confirm_prompt:
+            return result
+        else:
+            print("input doesn't match prior input! Try again:")
+    print("Exhausted tries, exiting...")
+    exit(2)
+
+
 @dataclass
 class ConfigurationManager:
     student_email: str
-    access_token: str
     instructor_email_addresses: List[str]
+    access_token: str
+    
+    # future proofing in case more providers are added
+    provider: str = "github"
 
     @staticmethod
     def init():

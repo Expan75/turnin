@@ -17,10 +17,7 @@ def partial_clone(repository_url: str, local_path: str):
     """Like clone but removes the .git folder to avoid accidental submodules
         Does allow the equivilent of git clone github.com/user/reponame/repofolder
     """
-    # clone
     clone(repository_url, local_path)
-
-    # remove .git/
     repository_top_level = os.listdir(local_path)
 
 
