@@ -14,7 +14,7 @@ class TestGithubClient(unittest.TestCase):
         self.assertIsNotNone(self.client)
 
     def test_headers(self):
-        self.assertIsNotNone(self.headers())
+        self.assertIsNotNone(self )
 
 
     @patch('builtins.print', lambda x: x) 
