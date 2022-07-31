@@ -1,7 +1,5 @@
-import os
-import pytest
-import tempfile
 from turnin import config
+
 
 valid_provider = {1: "GitHub"}
 valid_email = "example@example.com"

@@ -1,5 +1,4 @@
 import fire
-from turnin.provider import Provider
 from turnin.provider_factory import create_provider
 from turnin.config import Configuration
 
@@ -33,7 +32,7 @@ class Commands:
     def init(self):
         """Initalises the tool and sets up configuration."""
         config = Configuration.initialize()
-        provider = create_provider(config).initialize()
+        provider = create_provider(config)
 
     def verify(self):
         """Verifies the integrity of the tool and its initalisation."""
