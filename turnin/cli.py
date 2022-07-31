@@ -1,8 +1,7 @@
 import fire
-
-from turnin import git
-from turnin.github_client import GithubClient
-from turnin.config import ConfigurationManager
+from turnin.provider import Provider
+from turnin.provider_factory import create_provider
+from turnin.config import Configuration
 
 VERSION = "0.0.1"
 
@@ -11,7 +10,7 @@ class AssignmentCommands:
     """Use this subcommand to submit homework assignments"""
 
     def create(self, template_url: str, pathname: str = None):
-        git.clone(template_url, pathname)
+        pass
 
     def submit(self):
         pass
@@ -31,11 +30,12 @@ class Commands:
     
     def init(self):
         """Initalises the tool and sets up configuration."""
-        ConfigurationManager.init()
+        Configuration.initialize()
 
     def verify(self):
         """Verifies the integrity of the tool and its initalisation."""
-        ConfigurationManager.verify()
+        configuration = Configuration.read().verify()
+        provider = create_provider(configuration).verify()
         print("Initalisation successful. Ready to go!")
 
     def version(self):

@@ -1,38 +1,34 @@
 import os
+import pytest
 import tempfile
-import unittest
-
 from turnin import config
 
-
-class TestConfig(unittest.TestCase):
-
-    configuration_filepath = os.path.join(tempfile.gettempdir(), '.turnin.json')
-
-    def test_class_exists(self):
-        self.assertIsNotNone(config.ConfigurationManager)
-    
-    def test_read_non_existing_config(self):
-        config.CONFIGURATION_FILEPATH = self.configuration_filepath
-        with self.assertRaises(FileNotFoundError):
-            config.ConfigurationManager.read()
-
-    def test_config_write(self):
-        with tempfile.TemporaryDirectory() as _dir:
-            config.CONFIGURATION_FILEPATH = os.path.join(_dir, '.turnin.json')
-            persisted_configuration = config.ConfigurationManager('', '', ['']).write()
-            self.assertIsNotNone(persisted_configuration)
-            self.assertIsNotNone(config.ConfigurationManager.read())
-            self.assertEqual(persisted_configuration, config.ConfigurationManager.read())
-
-    def test_github_access_verification(self):
-        with tempfile.TemporaryDirectory() as _dir:
-            config.ConfigurationManager.verify_accesss_token_to_github.response = { "email": "test@test.com" } 
-            config.CONFIGURATION_FILEPATH = os.path.join(_dir, '.turnin.json')
-            with self.assertRaises(RuntimeError):
-                # should yield 401 as no valid access token is provided.
-                config.ConfigurationManager('test@test.com', '', ['']).write().verify_accesss_token_to_github()
+valid_provider = { 1: "GitHub" }
+valid_email = "example@example.com" 
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_exists(configuration: config.Configuration):
+    assert configuration is not None
+
+
+def test_should_retry_with_invalid_provider(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda x: "1")
+    provider = config.Configuration.prompt_provider("some provider idk")
+    assert provider == valid_provider[1]    
+
+
+def test_should_retry_with_invalid_email(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda x: valid_email)
+    email = config.Configuration.prompt_email("miss", "matched")
+    assert email == valid_email
+
+
+def test_should_allow_valid_instructor(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda x: valid_email)
+    instructors = config.Configuration.prompt_instructors()
+    assert instructors[0] == valid_email
+
+
+def test_should_not_overwrite_unless_explicit(monkeypatch):
+    monkeypatch.setattr('builtins.input', lambda x: "n") 
+    assert config.Configuration.initialize() is None

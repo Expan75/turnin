@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from turnin.config import ConfigurationManager
-from turnin.github_client import GithubClient
+from turnin.github import GithubClient
 
 
 class TestGithubClient(unittest.TestCase):

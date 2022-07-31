@@ -1,135 +1,101 @@
-"""Actions for managing tool configuration and setup"""
 import os
 import json
-import urllib.request
-import urllib.error
-import subprocess
-from typing import List
-from dataclasses import dataclass
+import logging
+from typing import List, Optional
+from dataclasses import dataclass, asdict
+from pprint import pprint
 
-CONFIGURATION_FILEPATH = os.path.join(os.path.expanduser("~"), ".turnin")
-
-
-def format_prompt(prompt: str) -> str:
-    return f"{prompt}: " if prompt[-1] != " " else prompt 
+log = logging.getLogger(__name__)
 
 
-def get_and_confirm_input(message: str) -> str:
-    """utility loop for confirming input, hopefully reducing typos"""
-    attemps = 0
-    message_prompt = format_prompt(message)
-    while attemps < 3:
-        result = input(message_prompt)
-        confirm_prompt = input(format_prompt(f"{message} again"))    
-        if result == confirm_prompt:
-            return result
-        else:
-            print("input doesn't match prior input! Try again:")
-    print("Exhausted tries, exiting...")
-    exit(2)
+TURNIN_DIRECTORY = os.path.join(os.path.expanduser("~"), ".turnin")
+TURNIN_CONFIGURATION_FILE = os.path.join(TURNIN_DIRECTORY, "config.json")
 
 
 @dataclass
-class ConfigurationManager:
-    student_email: str
+class Configuration:
+
+    provider: str
+    user_email: str
     instructor_email_addresses: List[str]
-    access_token: str
-    
-    # future proofing in case more providers are added
-    provider: str = "github"
+    ssh_key_path: Optional[str] = None
+    access_token: Optional[str] = None
 
-    @staticmethod
-    def init():
-        """Starts the inital flow to create a configuration file"""
-
-        if os.path.isfile(CONFIGURATION_FILEPATH):
-            print("Configuration file already exists. Are you sure you would like to override it?")
-            if "reinit" != input("To override and reinitalise, enter 'reinit': "):
-                print("exiting...")
-                exit(2)
+    @classmethod
+    def initialize(cls):
+        """Set up configuration object if nothing exists"""
+        if os.path.exists(TURNIN_CONFIGURATION_FILE): 
+            print(f"Detected existing configuration at {TURNIN_CONFIGURATION_FILE}")
+            prompt_response = input("Do you want to overwrite exinsting configuration? y/n: ")
+            if prompt_response.strip().lower() != "y":
+                return
             else:
-                print("proceeding with reinit...")
+                print(f"Removing {TURNIN_CONFIGURATION_FILE}.")
+                os.remove(TURNIN_CONFIGURATION_FILE)
 
-        student_email = input('Please input your email: ')
-        instructor_emails = []
-        add_more_toggle = True
-        while len(instructor_emails) < 1 or add_more_toggle:
-            instructor_email = input('Please input the email of an assigned instructor: ')
-            instructor_emails.append(instructor_email)
-            add_more_toggle = True if input("Would you like to add another? (y/n): ") == "y" else False
-        access_token = input('Please input your github access token: ')
+        os.makedirs(TURNIN_DIRECTORY, exist_ok=True)
+        config_data = {
+            "provider": cls.prompt_provider(),
+            "user_email": cls.prompt_email(),
+            "instructor_email_addresses": cls.prompt_instructors()
+        }
+        
+        return Configuration(**config_data).write()
+    
+    @classmethod
+    def prompt_provider(cls, provider=None) -> str:
+        providers = {
+            1: "GitHub"
+        }
+        pprint(providers, indent=4)
+        provider_key = input(f"Please one of the above providers by number: ")
+        if (provider := providers.get(int(provider_key))) is None:
+            return cls.prompt_provider()
+        print(f"Provider selected as {provider}!")
+        return provider
+    
+    @classmethod
+    def prompt_email(cls, email=None, confirmed_email=None) -> str:
+        if email is not None and email == confirmed_email:
+            return email
+        elif email is not None and confirmed_email is not None:
+            print(f"{email=} mismatch against {confirmed_email=}")
+        email = input("Please enter your email address: ")
+        confirmed_email = input("Please enter your confirmed email address: ")
+        return cls.prompt_email(email, confirmed_email)
+    
+    @classmethod
+    def prompt_instructors(cls, instructors=[]) -> List[str]:
+        instructors.append(
+            input("Please enter the email of your instructor: ")
+        )
+        add_another = input("Would you like to add another? [y/n]: ")
+        if add_another == "y":
+            return cls.prompt_instructors(instructors)
+        return instructors
 
-        # TODO: currently there's no validation. Probably we'd restart the entire flow for simplicty.
-        print("initialising and writing configuration...")
-        configuration = ConfigurationManager(
-            student_email=student_email, 
-            instructor_email_addresses=instructor_emails,
-            access_token=access_token
-        ).write()
-        print(f"successfully wrote configuration to disk")
-        return configuration
+    def write(self):
+        with open(TURNIN_CONFIGURATION_FILE, "w") as f:
+            json.dump(asdict(self), f, indent=4)
 
     @staticmethod
     def read():
-        try:
-            with open(CONFIGURATION_FILEPATH, 'r') as f:
-                configuration = f.read()
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                "ERROR: no config file found. Did you forget to call run init? -> python3 -m turnin init"
-            )
-        parsed_configuration = json.loads(configuration)
-        return ConfigurationManager(**parsed_configuration)
+        with open(TURNIN_CONFIGURATION_FILE, "r") as f:
+            return Configuration(**json.load(f, encoding="utf-8"))
 
-    def write(self):
-        with open(CONFIGURATION_FILEPATH, 'w+') as f:
-            json.dump({
-                'student_email': self.student_email,
-                'access_token': self.access_token,
-                'instructor_email_addresses': self.instructor_email_addresses    
-            }, f, indent=4)
-        return self
+    @classmethod
+    def verify(cls):
+        config = cls.read()
 
-    @staticmethod
-    def verify():
-        """Utility method for ensuring installation and configuration integrity"""
-        try:
-            config = ConfigurationManager.read().verify_ssh_to_github().verify_accesss_token_to_github()
-            print("SUCCESS: verification was successful. You should now be able to submit assignments!")
-            return config      
-        except (NotImplementedError, FileNotFoundError, RuntimeError) as e:
-            raise e
+    def update_email(self, email: str):
+        pass
 
-    def verify_ssh_to_github(self):
-        ssh_to_github_process = subprocess.run(["ssh","-T", "git@github.com"], encoding="utf-8", capture_output=True)
-        if (
-            ("You've successfully authenticated" not in ssh_to_github_process.stdout)
-            and ("You've successfully authenticated" not in ssh_to_github_process.stderr)
-        ):
-            raise RuntimeError(f"Authenticated ssh connection to Github could not be established. Output {ssh_to_github_process.stderr}")
-        return self
+    def add_instructor(self, instructor: str):
+        pass
 
-    def verify_accesss_token_to_github(self):
-        try:
-            # fetch user details (every resource is identity scoped)
-            headers={
-                "Accept": "application/vnd.github.v3+json", 
-                "Authorization": "Bearer " + self.access_token
-            }
-            request = urllib.request.Request("https://api.github.com/user", headers=headers)
-            response = json.loads(urllib.request.urlopen(request).read().decode())
-            
-            if response["email"] is None:
-                raise RuntimeError("Could not extract email using github access token.")        
-            if response["email"] != self.student_email:
-                raise RuntimeError(f"Provided email ({self.student_email}) in configuration does not match Github account ({response['email']})")
-        
-        except AssertionError as e:
-            raise RuntimeError(f"Access token not defined, did you run python -m turnin init? Error: {e}")
-        except urllib.error.URLError as e:
-            raise RuntimeError(f"Access token not valid, recieved error from github API; {e}")
-        return self
-
+    def remove_instructor(self, instructor: str):
+        pass 
+    
 
 if __name__ == "__main__":
-    pass
+    Configuration.initialize()
