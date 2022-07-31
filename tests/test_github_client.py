@@ -6,7 +6,7 @@ from turnin.github import GithubClient
 
 
 class TestGithubClient(unittest.TestCase):
-    
+
     config = ConfigurationManager.read()
     client = GithubClient(config)
 
@@ -14,19 +14,18 @@ class TestGithubClient(unittest.TestCase):
         self.assertIsNotNone(self.client)
 
     def test_headers(self):
-        self.assertIsNotNone(self )
+        self.assertIsNotNone(self)
 
-
-    @patch('builtins.print', lambda x: x) 
+    @patch("builtins.print", lambda x: x)
     def test_fork(self):
         """NOTE: we don't have delete rights on the token so manual cleanup is required here"""
-        sample_repo_url = "https://github.com/octocat/Hello-World" 
+        sample_repo_url = "https://github.com/octocat/Hello-World"
         respository_url_1 = self.client.fork(sample_repo_url)
         respository_url_2 = self.client.fork(sample_repo_url)
         self.assertIsNotNone(respository_url_1)
         self.assertIsNotNone(respository_url_2)
         self.assertTrue(respository_url_1 == respository_url_2)
-    
+
     def test_invite_collaborator(self):
         # https://docs.github.com/en/rest/collaborators/collaborators#add-a-repository-collaborator
         pass

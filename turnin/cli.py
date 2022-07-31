@@ -23,19 +23,22 @@ class AssignmentCommands:
         # git+add+commit+push the added folder and contained files
         # verify success
 
+
 class Commands:
-    """CLI tools for automating homework template usage and submissions"""    
+    """CLI tools for automating homework template usage and submissions"""
+
     def __init__(self):
         self.homework = AssignmentCommands()
-    
+
     def init(self):
         """Initalises the tool and sets up configuration."""
-        Configuration.initialize()
+        config = Configuration.initialize()
+        provider = create_provider(config).initialize()
 
     def verify(self):
         """Verifies the integrity of the tool and its initalisation."""
-        configuration = Configuration.read().verify()
-        provider = create_provider(configuration).verify()
+        config = Configuration.read().verify()
+        provider = create_provider(config).verify()
         print("Initalisation successful. Ready to go!")
 
     def version(self):
