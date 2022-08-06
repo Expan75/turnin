@@ -5,7 +5,7 @@ class Provider(ABC):
     """Allow us to potentially which out Github to some other backend provider"""
 
     @abstractmethod
-    def authenticate(self) -> str:
+    def authenticate(self):
         """Can be any authentication strategy but machine oath is preferred."""
         pass
 

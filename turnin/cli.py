@@ -32,7 +32,8 @@ class Commands:
     def init(self):
         """Initalises the tool and sets up configuration."""
         config = Configuration.initialize()
-        provider = create_provider(config)
+        print(config)
+        provider = create_provider(config).authenticate()
 
     def verify(self):
         """Verifies the integrity of the tool and its initalisation."""

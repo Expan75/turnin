@@ -14,12 +14,12 @@ TURNIN_CONFIGURATION_FILE = os.path.join(TURNIN_DIRECTORY, "config.json")
 
 @dataclass
 class Configuration:
-
     provider: str
     user_email: str
     instructor_email_addresses: List[str]
     ssh_key_path: Optional[str] = None
     access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
 
     @classmethod
     def initialize(cls):
@@ -30,7 +30,7 @@ class Configuration:
                 "Do you want to overwrite exinsting configuration? y/n: "
             )
             if prompt_response.strip().lower() != "y":
-                return
+                return cls.read()
             else:
                 print(f"Removing {TURNIN_CONFIGURATION_FILE}.")
                 os.remove(TURNIN_CONFIGURATION_FILE)
@@ -40,7 +40,7 @@ class Configuration:
             "user_email": cls.prompt_email(),
             "instructor_email_addresses": cls.prompt_instructors(),
         }
-
+        log.debug(f"writing init to file: {config_data=}")
         return Configuration(**config_data).write()
 
     @classmethod
@@ -75,11 +75,12 @@ class Configuration:
         os.makedirs(TURNIN_DIRECTORY, exist_ok=True)
         with open(TURNIN_CONFIGURATION_FILE, "w") as f:
             json.dump(asdict(self), f, indent=4)
+        return self
 
     @staticmethod
     def read():
         with open(TURNIN_CONFIGURATION_FILE, "r") as f:
-            return Configuration(**json.load(f, encoding="utf-8"))
+            return Configuration(**json.load(f))
 
     @classmethod
     def verify(cls):

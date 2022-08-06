@@ -7,6 +7,6 @@ def create_provider(configuration: Configuration) -> Provider:
     providers = {"GitHub": GitHub(configuration)}
     if (provider := providers.get(configuration.provider)) is None:
         raise NotImplementedError(
-            f"{configuration.provider} is not an implmented provider"
+            f"{configuration.provider} is not an implemented provider"
         )
     return provider
