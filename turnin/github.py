@@ -2,7 +2,6 @@ import json
 import requests
 import subprocess
 from typing import Tuple
-from turnin import ssh
 from turnin.provider import Provider
 from turnin.config import Configuration
 from dataclasses import dataclass
