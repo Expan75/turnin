@@ -1,8 +1,8 @@
-import os
 import json
 import requests
 import subprocess
 from typing import Tuple
+from turnin import ssh
 from turnin.provider import Provider
 from turnin.config import Configuration
 from dataclasses import dataclass
@@ -42,6 +42,11 @@ class GitHub(Provider):
         if self.config.access_token is not None:
             headers.update({"Authorization": "Bearer " + self.config.access_token})
         return headers
+
+    @property
+    def base_endpoint(self):
+        _, username, _ = self.get_user_identity()
+        return self.base + "/users" + f"/{username}"
 
     def start_oauth_challenge(self) -> OauthChallengeResponse:
         """Fetches the challenge to be solved by a user"""
@@ -102,6 +107,28 @@ class GitHub(Provider):
         print(f"Sucessfully completed oauth authentication to GitHub")
         return self
 
+    def get_user_identity(self) -> Tuple[str, str, str]:
+        endpoint = self.base + "/user"
+        response = requests.get(endpoint, headers=self.headers)
+        data = response.json() if response.status_code == 200 else {}
+        username, email = data.get("user"), data.get("email")
+        return response.status_code, username, email
+
+    def verify_access_token(self):
+        """Sends an API call to verify programme was given appropriate rights""" 
+        status_code, _, email = self.get_user_identity()
+        if status_code == 403:
+            raise RuntimeError("Not authenticated to GitHub!")
+        if status_code == 200:
+            if email is None:
+                raise RuntimeError("Could not extract email using github access token.") 
+            elif email != self.config.user_email:
+                raise RuntimeError(
+                    f"Provided email ({self.config.user_email}) in configuration does not match Github account ({email})"
+                )
+        print("successfully authenticated via oauth to GitHub")
+        return self
+    
     def verify_access_ssh(self):
         ssh_to_github_process = subprocess.run(
             ["ssh", "-T", "git@github.com"], encoding="utf-8", capture_output=True
@@ -113,27 +140,6 @@ class GitHub(Provider):
                 f"Authenticated ssh connection to Github could not be established. Output {ssh_to_github_process.stderr}"
             )
         print("successfully authenticated via ssh to GitHub")
-        return self
-
-    def verify_access_token(self):
-        """Sends an API call to verify programme was given appropriate rights"""
-        endpoint = self.base + "/user"
-        response = requests.get(endpoint, headers=self.headers)
-
-        if response.status_code == 403:
-            raise RuntimeError("Not authenticated to GitHub!")
-
-        if response.status_code == 200:
-            data = response.json()
-            email = data.get("email")
-            if email is None:
-                raise RuntimeError("Could not extract email using github access token.") 
-
-            if (email := data.get("email")) is None or email != self.config.user_email:
-                raise RuntimeError(
-                    f"Provided email ({self.config.user_email}) in configuration does not match Github account ({data['email']})"
-                )
-        print("successfully authenticated via oauth to GitHub")
         return self
 
     def verify(self):
@@ -149,6 +155,7 @@ class GitHub(Provider):
         if response.status_code == 200:
             forked_repository_url = response.json()["html_url"]
             print(f"Forked in progress, should be viewable on {forked_repository_url}")
+            return forked_repository_url
         raise RuntimeError(f"Could not fork based off {repository_url=}")
 
     def parse_repository_url(self, url) -> Tuple[str, str]:
