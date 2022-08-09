@@ -46,7 +46,7 @@ class GitHub(Provider):
     def start_oauth_challenge(self) -> OauthChallengeResponse:
         """Fetches the challenge to be solved by a user"""
         if self.client_id is None:
-            RuntimeError("No GITHUB_CLIENT_ID provided in environment.")
+            RuntimeError("No GITHUB_CLIENT_ID provided!")
         endpoint = "https://github.com/login/device/code"
         response = requests.post(
             endpoint, headers=self.headers, data=json.dumps({"client_id": self.client_id})
@@ -87,15 +87,16 @@ class GitHub(Provider):
             raise RuntimeError(
                 f"Tried to start oauth challenge but got {response_code}"
             )
-        return OauthChallengeResponse(**response.json())
+        return DeviceAccessTokenResponse(**response.json())
 
-    def authenticate(self) -> Tuple[str, str]:
+    def authenticate(self):
         """Invokes oath flow and passes authentication tokens"""
         challenge = self.start_oauth_challenge()
         self.prompt_oauth_user(challenge)
         completed_challenge = self.complete_oauth_challenge(challenge)
         self.config.access_token = completed_challenge.access_token
         self.config.refresh_token = completed_challenge.refresh_token
+        self.config.write()
         return self
 
     def verify_ssh_key(self):

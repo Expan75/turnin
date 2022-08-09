@@ -3,6 +3,11 @@ from turnin import config
 
 valid_provider = {1: "GitHub"}
 valid_email = "example@example.com"
+valid_config = {
+    "provider": valid_provider[1],
+    "user_email": valid_email,
+    "instructor_email_addresses": [valid_email],
+}
 
 
 def test_exists(configuration: config.Configuration):
@@ -28,5 +33,6 @@ def test_should_allow_valid_instructor(monkeypatch):
 
 
 def test_should_not_overwrite_unless_explicit(monkeypatch):
+    config.Configuration(**valid_config).write()
     monkeypatch.setattr("builtins.input", lambda x: "n")
-    assert config.Configuration.initialize() is None
+    assert config.Configuration.initialize() is not None
