@@ -45,8 +45,6 @@ class GitHub(Provider):
 
     def start_oauth_challenge(self) -> OauthChallengeResponse:
         """Fetches the challenge to be solved by a user"""
-        if self.client_id is None:
-            RuntimeError("No GITHUB_CLIENT_ID provided!")
         endpoint = "https://github.com/login/device/code"
         response = requests.post(
             endpoint, headers=self.headers, data=json.dumps({"client_id": self.client_id})
@@ -65,8 +63,11 @@ class GitHub(Provider):
         """
         input(
             f"""
-                Please head over to {oauth_challenge.verification_uri} using a webbrowser 
-                and input the code: {oauth_challenge.user_code}. Take your time, and press enter when you're done!
+            \n\n
+            Please head over to {oauth_challenge.verification_uri} using a webbrowser and input the code: {oauth_challenge.user_code}  
+            \n\n
+            Take your time, and press enter when you're done!
+            \n
             """
         )
 
@@ -91,15 +92,17 @@ class GitHub(Provider):
 
     def authenticate(self):
         """Invokes oath flow and passes authentication tokens"""
+        print("Authenticating to Github Oauth...")
         challenge = self.start_oauth_challenge()
         self.prompt_oauth_user(challenge)
         completed_challenge = self.complete_oauth_challenge(challenge)
         self.config.access_token = completed_challenge.access_token
         self.config.refresh_token = completed_challenge.refresh_token
         self.config.write()
+        print(f"Sucessfully completed oauth authentication to GitHub")
         return self
 
-    def verify_ssh_key(self):
+    def verify_access_ssh(self):
         ssh_to_github_process = subprocess.run(
             ["ssh", "-T", "git@github.com"], encoding="utf-8", capture_output=True
         )
@@ -109,21 +112,34 @@ class GitHub(Provider):
             raise RuntimeError(
                 f"Authenticated ssh connection to Github could not be established. Output {ssh_to_github_process.stderr}"
             )
+        print("successfully authenticated via ssh to GitHub")
         return self
 
     def verify_access_token(self):
         """Sends an API call to verify programme was given appropriate rights"""
         endpoint = self.base + "/user"
         response = requests.get(endpoint, headers=self.headers)
-        if (
-            response.status_code == 200
-            and (email := response.json()["email"]) is not None
-        ):
-            if email != self.config.user_email:
+
+        if response.status_code == 403:
+            raise RuntimeError("Not authenticated to GitHub!")
+
+        if response.status_code == 200:
+            data = response.json()
+            email = data.get("email")
+            if email is None:
+                raise RuntimeError("Could not extract email using github access token.") 
+
+            if (email := data.get("email")) is None or email != self.config.user_email:
                 raise RuntimeError(
-                    f"Provided email ({self.config.user_email}) in configuration does not match Github account ({response['email']})"
+                    f"Provided email ({self.config.user_email}) in configuration does not match Github account ({data['email']})"
                 )
-            raise RuntimeError("Could not extract email using github access token.")
+        print("successfully authenticated via oauth to GitHub")
+        return self
+
+    def verify(self):
+        self.verify_access_token()
+        self.verify_access_ssh()
+        return self
 
     def fork(self, repository_url: str) -> str:
         """Forks a repository given valid access token"""

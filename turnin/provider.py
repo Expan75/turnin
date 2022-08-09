@@ -10,12 +10,12 @@ class Provider(ABC):
         pass
 
     @abstractmethod
-    def verify_ssh_key() -> bool:
+    def verify_access_ssh(self):
         """Verifies the host's ssh connection to the provider"""
         pass
 
     @abstractmethod
-    def verify_access_token(token: str) -> bool:
+    def verify_access_token(self) -> bool:
         """Checks if a access token is valid"""
         pass
 

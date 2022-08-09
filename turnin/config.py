@@ -85,6 +85,10 @@ class Configuration:
     @classmethod
     def verify(cls):
         config = cls.read()
+        assert config.user_email is not None
+        assert config.instructor_email_addresses
+        assert config.provider
+        return config
 
     def update_email(self, email: str):
         pass
